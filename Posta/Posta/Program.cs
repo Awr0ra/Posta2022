@@ -2,10 +2,25 @@ using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// add configure JSON logging to the console
+//builder.Logging.AddJsonConsole();
+builder.Logging.AddConsole();
+
+#region add source of appsettings.<environment>.json
+
+builder.Configuration
+  .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+  .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: false, reloadOnChange: true);
+
+
+var useAppSettings = builder.Configuration.GetSection("GlobalOptions:Proxy");
+Console.WriteLine($"<<< {builder.Environment.ApplicationName} >>> {DateTime.Now:yyyy-MM-dd HH:mm:ss} / Environment:'{builder.Environment.EnvironmentName}'; Global proxy: '{useAppSettings.GetValue<string>("Url")}'; Proxy using:'{useAppSettings.GetValue<bool>("UseProxy")}'");
+
+#endregion
 
 // Add services to the container.
-
 builder.Services.AddControllers();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
