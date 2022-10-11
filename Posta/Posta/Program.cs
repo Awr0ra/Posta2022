@@ -1,4 +1,9 @@
 using Hangfire;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using PostaTypes.Helpers.Validation;
+using PostaTypes.Contracts.Validators;
+using PostaTypes.Contracts.Requests.Validation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,11 +24,25 @@ Console.WriteLine($"<<< {builder.Environment.ApplicationName} >>> {DateTime.Now:
 #endregion
 
 // Add services to the container.
-builder.Services.AddControllers();
+//builder.Services.AddControllers();
+
+// Add services to the container.
+// with FluentValidation custom error response
+builder.Services.AddControllers()
+    .AddFluentValidation()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = CustomValidationFailureHelper.MakeValidationResponse;
+    });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+#region Validators
+builder.Services.AddScoped<IValidator<ValidationCheckRequest>, ValidationCheckRequestValidator>();
+
+#endregion
 
 #region HangFire
 
